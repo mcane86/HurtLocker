@@ -1,6 +1,5 @@
 package com.michaelcane;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -15,12 +14,12 @@ public class ItemParser {
     }
 
     //--- Regex Patterns
-    private String namePattern = "([A-Za-z0-9.]+)";
+    private String fieldPattern = "([A-Za-z0-9.]+)";
     private String stringSplitPattern = "([;:^@%*!])";
     private String itemSplitPattern = "((##))";
 
     //--- Regex compilers
-    private Pattern name = Pattern.compile(namePattern);
+    private Pattern fieldName = Pattern.compile(fieldPattern);
     Pattern splitter = Pattern.compile(stringSplitPattern);
     Pattern itemSplitter = Pattern.compile(itemSplitPattern);
 
@@ -81,12 +80,17 @@ public class ItemParser {
         }
     }
 
-    public String findItemField(String string, int index) throws AttributeNotFoundException {
-        Matcher m = name.matcher((stringSplitter(string)[index]));
-        if(m.find()) {
-            return nameCleanup(m.group());
-        } else {
-            errorCount ++;
+    public String findItemField(String string, int index) throws AttributeNotFoundException{
+        try {
+            Matcher m = fieldName.matcher((stringSplitter(string)[index]));
+            if(m.find()) {
+                return nameCleanup(m.group());
+            } else {
+                errorCount ++;
+                throw new AttributeNotFoundException();
+            }
+        } catch (AttributeNotFoundException e) {
+            System.err.println("An Error was thrown: " + e);
             return "blank";
         }
     }

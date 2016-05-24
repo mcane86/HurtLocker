@@ -33,19 +33,12 @@ public class ItemParserTest {
     @Test
     public void testItemCounter() throws Exception {
         try {
-            String expected = "name:    Milk \t\t seen: 6 times\n" +
-                    "============= \t \t =============\n" +
-                    "Price: \t 3.23\t\t seen: 5 times\n" +
-                    "-------------\t\t -------------\n" +
-                    "Price:   1.23\t\t seen: 1 time";
-            itemParser.createItem("naMe:Milk;price:3.23;type:Food;expiration:1/25/2016##" +
-                    "naMe:MiLK;price:3.23;type:Food^expiration:1/11/2016##" +
-                    "NAME:MilK;price:3.23;type:Food;expiration:1/17/2016##" +
-                    "naMe:MilK;price:1.23;type:Food!expiration:4/25/2016##" +
-                    "naMe:Milk;price:3.23;type:Food;expiration:1/25/2016##" +
-                    "naMe:MiLK;priCe:;type:Food;expiration:1/11/2016##" +
-                    "NAME:MilK;price:3.23;type:Food;expiration:1/17/2016##" +
-                    "naMe:MilK;priCe:;type:Food;expiration:4/25/2016##");
+            String expected = "name:\tMilk\t\tseen: 6 times\n" +
+                    "=============\t\t=============\n" +
+                    "Price:\t3.23\t\tseen: 5 times\n" +
+                    "-------------\t\t-------------\n" +
+                    "Price:\t1.23\t\tseen: 1 times";
+            itemParser.createItem(Main.readRawDataToString());
             String actual = itemParser.itemCounter("Milk");
             assertEquals(expected, actual);
         } catch (Exception e) {
@@ -86,19 +79,11 @@ public class ItemParserTest {
         assertEquals(expected, actual);
     }
 
-    @Test(expected = AttributeNotFoundException.class)
-    public void findItemFieldExceptionTest() throws Exception {
-        String expected = "Milk";
-        String actual = itemParser.findItemField(Main.readRawDataToString(), 1);
-    }
-
     @Test
     public void findItemFieldExceptionErrorCounter() throws Exception {
         int errorsBeforeTheCounter = 1;
-        try {
-            String expected = "Bread";
-            String actual = itemParser.findItemField("naME:;price:1.23;type:Food;expiration:1/02/2016##", 1);
-        } catch (AttributeNotFoundException e) {        }
+        String expected = "Bread";
+        String actual = itemParser.findItemField("naME:;price:1.23;type:Food;expiration:1/02/2016##", 1);
         int errorsAfterTheCounter = itemParser.getErrorCount();
         assertEquals(errorsBeforeTheCounter, errorsAfterTheCounter);
     }

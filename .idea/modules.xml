@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/HurtLocker.iml" filepath="$PROJECT_DIR$/HurtLocker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Hurtlocker.iml" filepath="$PROJECT_DIR$/Hurtlocker.iml" />
     </modules>
   </component>
 </project>

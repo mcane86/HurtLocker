@@ -14,6 +14,9 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception{
+        ItemParser itemParser = new ItemParser();
 
+        itemParser.createItem(readRawDataToString());
+        System.out.println(itemParser.groceryListConstructor());
     }
 }
