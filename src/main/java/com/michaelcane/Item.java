@@ -4,7 +4,7 @@ package com.michaelcane;
 public class Item {
 
     private String name;
-    private double price;
+    private String price;
     private String type;
     private String expiration;
 
@@ -16,11 +16,11 @@ public class Item {
         this.name = name;
     }
 
-    public double getPrice() {
+    public String getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(String price) {
         this.price = price;
     }
 
@@ -40,7 +40,7 @@ public class Item {
         this.expiration = expiration;
     }
 
-    public Item(String name, double price, String type, String expiration) {
+    public Item(String name, String price, String type, String expiration) {
         this.name = name;
         this.price = price;
         this.type = type;

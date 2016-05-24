@@ -1,5 +1,6 @@
 package com.michaelcane;
 
+import jdk.nashorn.internal.runtime.ECMAException;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -10,17 +11,15 @@ import static org.junit.Assert.*;
 public class ItemParserTest {
     ItemParser itemParser;
 
-    double delta = 1e-15;
-
     @Before
     public void setUp() throws Exception {
         itemParser = new ItemParser();
     }
 
     @Test
-    public void stringSplitterTest () {
-        String expected = "BreaD";
-        String actual = itemParser.stringSplitter("naME:BreaD;price:1.23;type:Food;expiration:1/02/2016##")[1];
+    public void stringSplitterTest () throws Exception {
+        String expected = "Milk";
+        String actual = itemParser.stringSplitter(Main.readRawDataToString())[1];
         assertEquals(expected, actual);
     }
 
@@ -32,15 +31,26 @@ public class ItemParserTest {
     }
 
     @Test
-    public void testItemCounter() throws AttributeNotFoundException {
-        String expected = "name:    Milk \t\t seen: 6 times\n" +
-                "============= \t \t =============\n" +
-                "Price: \t 3.23\t\t seen: 5 times\n" +
-                "-------------\t\t -------------\n" +
-                "Price:   1.23\t\t seen: 1 time";
-        itemParser.createItem("naMe:Milk;price:3.23;type:Food;expiration:1/25/2016##naME:BreaD;price:1.23;type:Food;expiration:1/02/2016##");
-        String actual = itemParser.itemCounter("Milk");
-        assertEquals(expected, actual);
+    public void testItemCounter() throws Exception {
+        try {
+            String expected = "name:    Milk \t\t seen: 6 times\n" +
+                    "============= \t \t =============\n" +
+                    "Price: \t 3.23\t\t seen: 5 times\n" +
+                    "-------------\t\t -------------\n" +
+                    "Price:   1.23\t\t seen: 1 time";
+            itemParser.createItem("naMe:Milk;price:3.23;type:Food;expiration:1/25/2016##" +
+                    "naMe:MiLK;price:3.23;type:Food^expiration:1/11/2016##" +
+                    "NAME:MilK;price:3.23;type:Food;expiration:1/17/2016##" +
+                    "naMe:MilK;price:1.23;type:Food!expiration:4/25/2016##" +
+                    "naMe:Milk;price:3.23;type:Food;expiration:1/25/2016##" +
+                    "naMe:MiLK;priCe:;type:Food;expiration:1/11/2016##" +
+                    "NAME:MilK;price:3.23;type:Food;expiration:1/17/2016##" +
+                    "naMe:MilK;priCe:;type:Food;expiration:4/25/2016##");
+            String actual = itemParser.itemCounter("Milk");
+            assertEquals(expected, actual);
+        } catch (Exception e) {
+            System.err.println(e);
+        }
     }
 
     @Test
@@ -53,33 +63,33 @@ public class ItemParserTest {
     @Test
     public void createItem() throws Exception {
         String expectedName = "Milk";
-        double expectedPrice = 3.23;
+        String expectedPrice = "3.23";
         itemParser.createItem("naMe:Milk;price:3.23;type:Food;expiration:1/25/2016##naME:BreaD;price:1.23;type:Food;expiration:1/02/2016##");
         String actualName = itemParser.getListOfItems().get(0).getName();
-        double actualPrice = itemParser.getListOfItems().get(0).getPrice();
+        String actualPrice = itemParser.getListOfItems().get(0).getPrice();
         assertEquals(expectedName, actualName);
-        assertEquals(expectedPrice, actualPrice, delta);
+        assertEquals(expectedPrice, actualPrice);
     }
 
     @Test
     public void addItemToList() throws Exception {
         int expectedLength = 1;
-        itemParser.addItemToList("Milk", 1.23, "Food", "1/25/2016");
+        itemParser.addItemToList("Milk", "1.23", "Food", "1/25/2016");
         int actualLength = itemParser.getListOfItems().size();
         assertEquals(expectedLength, actualLength);
     }
 
     @Test
     public void findItemField() throws Exception {
-        String expected = "Bread";
-        String actual = itemParser.findItemField("naME:BreaD;price:1.23;type:Food;expiration:1/02/2016##", 1);
+        String expected = "Milk";
+        String actual = itemParser.findItemField(Main.readRawDataToString(), 1);
         assertEquals(expected, actual);
     }
 
     @Test(expected = AttributeNotFoundException.class)
     public void findItemFieldExceptionTest() throws Exception {
-        String expected = "Bread";
-        String actual = itemParser.findItemField("naME:;price:1.23;type:Food;expiration:1/02/2016##", 1);
+        String expected = "Milk";
+        String actual = itemParser.findItemField(Main.readRawDataToString(), 1);
     }
 
     @Test
@@ -93,4 +103,33 @@ public class ItemParserTest {
         assertEquals(errorsBeforeTheCounter, errorsAfterTheCounter);
     }
 
+    @Test
+    public void testGroceryListConstructor() throws Exception {
+        String expected = "name:\tMilk\t\tseen: 6 times\n" +
+                "=============\t\t=============\n" +
+                "Price:\t3.23\t\tseen: 5 times\n" +
+                "-------------\t\t-------------\n" +
+                "Price:\t1.23\t\tseen: 1 times\n" +
+                "\n" +
+                "name:\tBread\t\tseen: 6 times\n" +
+                "=============\t\t=============\n" +
+                "Price:\t1.23\t\tseen: 6 times\n" +
+                "-------------\t\t-------------\n" +
+                "\n" +
+                "name:\tCookies\t\tseen: 8 times\n" +
+                "=============\t\t=============\n" +
+                "Price:\t2.25\t\tseen: 8 times\n" +
+                "-------------\t\t-------------\n" +
+                "\n" +
+                "name:\tApples\t\tseen: 4 times\n" +
+                "=============\t\t=============\n" +
+                "Price:\t0.25\t\tseen: 2 times\n" +
+                "-------------\t\t-------------\n" +
+                "Price:\t0.23\t\tseen: 2 times\n" +
+                "\n" +
+                "Errors\t\t\tseen: 4 times";
+        itemParser.createItem(Main.readRawDataToString());
+        String actual = itemParser.groceryListConstructor();
+        assertEquals(expected, actual);
+    }
 }

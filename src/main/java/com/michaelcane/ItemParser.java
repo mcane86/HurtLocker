@@ -1,5 +1,7 @@
 package com.michaelcane;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.ArrayList;
@@ -14,7 +16,7 @@ public class ItemParser {
 
     //--- Regex Patterns
     private String namePattern = "([A-Za-z0-9.]+)";
-    private String stringSplitPattern = "([;:^@%*])";
+    private String stringSplitPattern = "([;:^@%*!])";
     private String itemSplitPattern = "((##))";
 
     //--- Regex compilers
@@ -35,13 +37,34 @@ public class ItemParser {
 
     public String itemCounter(String string) {
         StringBuilder itemChart = new StringBuilder();
+        LinkedHashMap<String, Integer> priceCounter = new LinkedHashMap<>();
         int stringCount = 0;
         for(Item item : listOfItems) {
             if(item.getName().equals(string)) {
                 stringCount ++;
+                if(priceCounter.containsKey(item.getPrice())) {
+                    priceCounter.put(item.getPrice(), priceCounter.get(item.getPrice())+1);
+                } else if (item.getPrice().equals("blank")) {
+                    stringCount--;
+                    continue;
+                } else {
+                    priceCounter.put(item.getPrice(), 1);
+                }
             }
+
         }
-        return "name:\t" + string + "\t\t" + "seen: " + stringCount + " times\n";
+        itemChart.append("name:\t" + string + "\t\t" + "seen: " + stringCount + " times\n");
+        itemChart.append("=============\t\t=============\n");
+        int counter  = 0;
+        for(String key: priceCounter.keySet()) {
+            itemChart.append("Price:\t" + key + "\t\t" + "seen: " + priceCounter.get(key) + " times");
+            if(counter == 0) {
+                itemChart.append("\n-------------\t\t-------------\n");
+            }
+            counter ++;
+        }
+
+        return itemChart.toString();
     }
 
     public String nameCleanup(String string) {
@@ -64,20 +87,33 @@ public class ItemParser {
             return nameCleanup(m.group());
         } else {
             errorCount ++;
-            throw new AttributeNotFoundException();
+            return "blank";
         }
     }
 
     public void createItem(String input) throws AttributeNotFoundException {
         String[] itemArray = input.split(itemSplitPattern);
         for(int i = 0; i < itemArray.length; i ++) {
-            addItemToList(findItemField(itemArray[i], 1), Double.parseDouble(findItemField(itemArray[i], 3)), findItemField(itemArray[i], 5), findItemField(itemArray[i], 7));
+            addItemToList(findItemField(itemArray[i], 1), findItemField(itemArray[i],3), findItemField(itemArray[i], 5), findItemField(itemArray[i], 7));
         }
     }
 
-    public void addItemToList(String name, double price, String type, String date) {
+    public void addItemToList(String name, String price, String type, String date) {
         listOfItems.add(new Item(name, price, type, date));
     }
 
+    public String groceryListConstructor() {
+        StringBuilder groceryList = new StringBuilder();
+        groceryList.append(itemCounter("Milk"));
+        groceryList.append("\n\n");
+        groceryList.append(itemCounter("Bread"));
+        groceryList.append("\n");
+        groceryList.append(itemCounter("Cookies"));
+        groceryList.append("\n");
+        groceryList.append(itemCounter("Apples"));
+        groceryList.append("\n\n");
+        groceryList.append("Errors\t\t\tseen: " + errorCount + " times");
+        return groceryList.toString();
+    }
 
 }
